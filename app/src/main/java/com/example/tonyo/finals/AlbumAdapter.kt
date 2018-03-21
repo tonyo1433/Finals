@@ -4,8 +4,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import com.example.tonyo.finals.R.id.album_image
 import kotlinx.android.synthetic.main.song_list_item.view.*
 
 /**
@@ -23,6 +21,7 @@ class AlbumAdapter(val context: ArrayList<Albums>): RecyclerView.Adapter<AlbumAd
     override fun onBindViewHolder(holder: CustomViewHolder?, position: Int) {
         holder?.view?.album_title?.text = context[position].name
         holder?.view?.album_artist?.text = context[position].artist
+
     }
 
     class CustomViewHolder(var view: View) : RecyclerView.ViewHolder(view) {

@@ -4,57 +4,48 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.song_list_item.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
-    private val url = "https://www.last.fm/api"
-    private val Key_Name = "name"
-    private val Key_Artist = "artist"
-    private val Key_Image = "image"
-    private val AlbumList = ArrayList<Albums>()
+    private val url = "http://ws.audioscrobbler.com/2.0/?method=album.search&album=believe" +
+            "&api_key=e224027bbd7b17fe9ac0971d12b85717&format=json"
+
+    private val addAlbumList = ArrayList<Albums>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         loading_indicator.visibility = View.INVISIBLE
-
         btnSearch.setOnClickListener {
             AlbumSearch()
             loading_indicator.visibility = View.VISIBLE
-            AlbumList.clear()
+            addAlbumList.clear()
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
     }
     private fun AlbumSearch() {
+        for (i in 1..50) {
+            doAsync {
 
-        doAsync {
-
-            var tempName = searchTxt.text.toString()
-            val resultJson = URL(url + tempName).readText()
-            val jsonObject = JSONObject(resultJson)
-            val getArtist = jsonObject.getInt(Key_Artist)
-            val getName = jsonObject.getString(Key_Name)
-            val getImage = jsonObject.getJSONObject(Key_Image)
-            val getTitle = jsonObject.getString("title")
-
-            uiThread {
-                recyclerView.adapter = AlbumAdapter(AlbumList)
-                AlbumList.add(Albums(getName,
-                        getArtist,
-                        getImage,getTitle))
-                album_title.text = getName.substring(0, 1).toUpperCase() + getName.substring(1)
-                Picasso.with(this@MainActivity).load(getImage).into(album_image)
-                loading_indicator.visibility = View.INVISIBLE
+                var tempName = searchTxt.text.toString()
+                val resultJson = URL(url + tempName).readText()
+                val jsonObject = JSONObject(resultJson)
+                val getName = jsonObject.getJSONObject("results").getJSONArray("albummatches")
+                        .getJSONObject(i).getString("name")
+                val getArtist = jsonObject.getJSONObject("results").getJSONArray("albummatches")
+                        .getJSONObject(i).getString("artist")
+//                val getImage = jsonObject.getJSONObject("results").getJSONArray("albummatches")
+//                        .getJSONObject(0).getString("image")
+                uiThread {
+                    recyclerView.adapter = AlbumAdapter(this@MainActivity.addAlbumList)
+                    addAlbumList.add(Albums(getName, getArtist))
+                    loading_indicator.visibility = View.INVISIBLE
+                }
             }
         }
     }
 
-
 }
-
